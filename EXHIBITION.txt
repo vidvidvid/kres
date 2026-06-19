@@ -4,7 +4,8 @@ kres 2026 - SETUP RUN-BOOK
 Two roles, one Wi-Fi:
   - 1 Display PC ......... runs the show + the screen
   - up to ~20 Sender PCs . each streams its mouse as an animal
-No internet needed at the show.
+No internet needed at the show. Venue Wi-Fi is confirmed OK (devices can
+reach each other), so there's no network setup to do on the day.
 
 
 1. BUILD ONCE  (any Windows PC, with internet)
@@ -49,9 +50,8 @@ IF SOMETHING'S OFF
 ------------------
   - No animal from a sender:
         Check RELAY= is the display's IP, and that PC's Wi-Fi profile is Private.
-  - Nothing connects at all:
-        Wi-Fi is isolating devices - hand WIFI-GUIDE.txt to venue IT,
-        or use your own router.
+  - Nothing connects at all (shouldn't happen - venue Wi-Fi is set right):
+        last resort - hand WIFI-GUIDE.txt to venue IT, or use your own router.
   - Black screen on the display:
         Re-launch kres-display.exe.
 

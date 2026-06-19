@@ -47,13 +47,30 @@ cd sender && pip install -r requirements.txt && python cursor_agent.py --host lo
 
 (on macOS the sender needs Accessibility permission to read the cursor).
 
-## Run the show (Windows)
+## Run the show — day of the exhibition
 
-You only need Python on **one** Windows PC, once, to build the apps. Double-click
-`build-all.bat` → it produces a `deploy/` folder with `kres-display.exe` (the display PC)
-and a `sender/` folder (each visitor PC). After that no machine needs Python.
+**Prep once** (any Windows PC with internet): double-click **`build-all.bat`** → it makes a
+`deploy/` folder with `kres-display.exe` (the display) and a `sender/` folder (each visitor
+PC). Installs Python if it's missing. After this, no show machine needs Python.
 
-Full step-by-step + troubleshooting: **`EXHIBITION.txt`**. Venue Wi-Fi notes: **`WIFI-GUIDE.txt`**.
+**At the gallery:**
+
+1. **Display PC** (the screen) — copy `deploy\display\kres-display.exe` over and double-click
+   it. The one-time wizard sets up the firewall + auto-start and shows the display's **IP —
+   write it down**. It now runs fullscreen, and again on every reboot.
+2. **Each visitor PC** (a sender) — copy the `deploy\sender\` folder over, open `run-sender.bat`
+   and set `RELAY=<display IP>`, then double-click `install-autostart.bat` and `run-sender.bat`.
+3. **Power everything on** — order doesn't matter, it all auto-reconnects.
+
+> ✅ The venue Wi-Fi is confirmed working (device-to-device is allowed), so there's no network
+> setup to do on the day. (If a single sender won't connect, set that PC's Wi-Fi profile to
+> **Private**.)
+
+**2-minute check:** boot the display, point one sender at its IP — if an animal appears, the
+whole room is good. The display always shows the fire + a white "mother cursor", so a blank
+screen means a real problem.
+
+Full run-book: **`EXHIBITION.txt`**. Ports: **8765** (relay) + **8080** (viewer), both on the display.
 
 ## Viewer URL options
 
