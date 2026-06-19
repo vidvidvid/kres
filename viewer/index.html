@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Cursor Canvas — kres 2026</title>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #07070b; cursor: none; }
+    #stage, #fx { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: block; }
+    #stage { z-index: 1; }
+    #fx { z-index: 2; mix-blend-mode: screen; pointer-events: none; }  /* glow adds over pixels; black is invisible */
+    #hud {
+      position: fixed; z-index: 3; top: 8px; left: 10px;
+      font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: #6f6f7a; pointer-events: none; user-select: none; white-space: pre;
+    }
+  </style>
+
+  <!-- three.js, vendored locally (viewer/vendor/) so the display needs NO internet.
+       To update three: re-download build/three.module.js + the examples/jsm files
+       under vendor/addons/ for the new version (see EXHIBITION.md / README). -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three.module.js",
+      "three/addons/": "./vendor/addons/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="stage"></canvas>
+  <canvas id="fx"></canvas>
+  <div id="hud"></div>
+  <script src="viewer.js"></script>          <!-- pixel scene + all state (classic script) -->
+  <script type="module" src="fx.js"></script> <!-- WebGL glow layer (three.js) -->
+</body>
+</html>

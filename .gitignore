@@ -1,0 +1,22 @@
+# Python
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# PyInstaller build artifacts
+build/
+dist/
+**/build/
+**/dist/
+*.spec
+
+# Packaged download / generated at deploy time
+deploy/
+cursor-canvas.zip
+kres-display.configured
+
+# OS
+.DS_Store
+**/.DS_Store

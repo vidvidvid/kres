@@ -1,0 +1,60 @@
+kres 2026 - SETUP RUN-BOOK
+==========================
+
+Two roles, one Wi-Fi:
+  - 1 Display PC ......... runs the show + the screen
+  - up to ~20 Sender PCs . each streams its mouse as an animal
+No internet needed at the show.
+
+
+1. BUILD ONCE  (any Windows PC, with internet)
+----------------------------------------------
+Copy the project folder over, then double-click  build-all.bat
+  (No Python? It opens the download page - install it with "Add to PATH",
+   then run it again.)
+You get a  deploy\  folder. No show machine needs Python after this.
+
+
+2. DISPLAY PC
+-------------
+  1) Copy  deploy\display\kres-display.exe  over, then double-click it.
+  2) First-run wizard: approve the admin prompt, WRITE DOWN the IP it shows,
+     and say Yes to auto-start.
+  3) On the router, RESERVE that IP so it can't change.
+
+Runs fullscreen now and on every boot.
+(Re-run the wizard:  kres-display.exe --setup )
+
+
+3. EACH SENDER PC
+-----------------
+  1) Copy the  deploy\sender\  folder over.
+  2) In  run-sender.bat , set  RELAY=  to the Display PC's IP
+     (or use the "run-sender (prefilled).bat" the wizard made).
+  3) Set that PC's Wi-Fi profile to PRIVATE   <- Public blocks it!
+  4) Double-click  install-autostart.bat , then  run-sender.bat .
+
+
+4. SHOW DAY
+-----------
+Power everything on - order doesn't matter (it all auto-reconnects).
+The display is alive even with no visitors (fire + white "mother cursor"),
+so a blank screen = a real problem.
+
+2-MINUTE CHECK FIRST: boot the display, point ONE sender at its IP - an
+animal appears = the whole room is good.
+
+
+IF SOMETHING'S OFF
+------------------
+  - No animal from a sender:
+        Check RELAY= is the display's IP, and that PC's Wi-Fi profile is Private.
+  - Nothing connects at all:
+        Wi-Fi is isolating devices - hand WIFI-GUIDE.txt to venue IT,
+        or use your own router.
+  - Black screen on the display:
+        Re-launch kres-display.exe.
+
+
+Ports: 8765 (relay) + 8080 (viewer), both on the display.
+Status: add ?hud to the URL.   More: README.

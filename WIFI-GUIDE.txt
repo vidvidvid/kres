@@ -1,0 +1,17 @@
+kres 2026 - Wi-Fi setting we need
+=================================
+
+On the SSID our ~20 machines use, please TURN OFF client isolation
+(a.k.a. AP isolation / wireless isolation / peer-to-peer blocking) so the
+machines can reach each other on the LAN (TCP port 8765).
+No internet or port forwarding needed - local only.
+
+Where it usually lives:
+  - TP-Link / Asus / Netgear:  Wireless -> Advanced -> AP / Client Isolation -> off
+  - UniFi:                     WiFi -> Advanced -> Client Device Isolation -> off
+  - Cisco / Aruba / Meraki:    SSID -> Peer-to-peer blocking -> Disabled
+
+Check (PowerShell, from any machine):
+  Test-NetConnection <host-ip> -Port 8765      ->  should say  True
+
+Thanks!
