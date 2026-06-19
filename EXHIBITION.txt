@@ -30,10 +30,11 @@ Runs fullscreen now and on every boot.
 3. EACH SENDER PC
 -----------------
   1) Copy the  deploy\sender\  folder over.
-  2) In  run-sender.bat , set  RELAY=  to the Display PC's IP
-     (or use the "run-sender (prefilled).bat" the wizard made).
-  3) Set that PC's Wi-Fi profile to PRIVATE   <- Public blocks it!
-  4) Double-click  install-autostart.bat , then  run-sender.bat .
+  2) Drop the  "run-sender (prefilled).bat"  the display made into that folder
+     (it already has the display's IP - no typing). Double-click it -> an animal
+     appears. (Optional: double-click install-autostart.bat first, for auto-start.)
+  3) If a PC won't connect: set its Wi-Fi profile to PRIVATE (Public can block it).
+     [Advanced: instead of the prefilled file you can edit RELAY= in run-sender.bat.]
 
 
 4. SHOW DAY

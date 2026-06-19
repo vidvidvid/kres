@@ -9,6 +9,7 @@ cd /d "%~dp0"
 
 set "TARGET="
 if exist "%~dp0cursor-agent.exe"  set "TARGET=%~dp0run-sender.bat"
+if exist "%~dp0run-sender (prefilled).bat" set "TARGET=%~dp0run-sender (prefilled).bat"
 if exist "%~dp0start-display.bat" set "TARGET=%~dp0start-display.bat"
 
 if not defined TARGET (
