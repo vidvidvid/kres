@@ -83,10 +83,11 @@ function loadImage(src) {
   const url = src + (src.indexOf("?") < 0 ? "?v=" + ASSET_VER : "");
   return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = url; });
 }
-let bgImg = null, spredajImg = null, textboxImg = null, paperImg = null;
+let bgImg = null, spredajImg = null, textboxImg = null, paperImg = null, differenceImg = null;
 loadImage("assets/landing.png").then((i) => (bgImg = i));        // the landing scene background
 loadImage("assets/textbox.png").then((i) => (textboxImg = i));   // text card — behind the frame plants
 loadImage("assets/spredaj.png").then((i) => (spredajImg = i));   // ornamental frame (plants), in FRONT of the animals + textbox
+loadImage("assets/difference.png").then((i) => (differenceImg = i));   // the two window panels by the fire (difference blend)
 loadImage("assets/plus-darker.png").then((i) => (paperImg = i)); // paper texture, multiply over everything
 const zivalice = ZIVALICE.map((z) => ({ img: null, aspect: z.w / z.h, key: z.key, frame: z.frame, src: z.src }));
 ZIVALICE.forEach((z, i) => loadImage(z.src).then((img) => (zivalice[i].img = img)));
@@ -613,8 +614,9 @@ function frame(now) {
     idle = live === 0;
     if (SHOW_FIRE) { computeFireRect(); updateFire(now, dt); drawFire(); }
     if (!idle) for (const [, c] of cursors) drawCursor(c, now);
-    // Overall-frame stack (textbox was already drawn at the back, just over the bg): plants → paper.
+    // Overall-frame stack (textbox was already drawn at the back, just over the bg): plants → windows → paper.
     if (spredajImg) ctx.drawImage(spredajImg, stageX, stageY, stageW, stageH);   // ornamental frame (plants) in front
+    if (differenceImg) { ctx.save(); ctx.globalCompositeOperation = "difference"; ctx.drawImage(differenceImg, stageX, stageY, stageW, stageH); ctx.restore(); }   // the two window panels by the fire
     if (paperImg) { ctx.save(); ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = 0.6; ctx.drawImage(paperImg, stageX, stageY, stageW, stageH); ctx.restore(); }   // paper texture over everything
     drawMotherCursor(now);
   }

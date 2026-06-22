@@ -82,7 +82,7 @@
   let active = null;          // current frame key, or null on the landing
   let resetTimer = 0;
   let ornamentTimer = 0;
-  let ponyRAF = 0, ponyVideo = null;
+  let ponyRAF = 0, ponyVideo = null, ponyVFC = false;
   const slides = [];          // in-flight slide-to-centre sprites (cleared on swap/close)
 
   // ---- the top arc (6 animals): standby display + in-frame switcher --------
@@ -144,8 +144,13 @@
   }
   function teardownElement() {
     if (ornamentTimer) { clearInterval(ornamentTimer); ornamentTimer = 0; }
-    if (ponyRAF) { cancelAnimationFrame(ponyRAF); ponyRAF = 0; }
+    if (ponyRAF) {
+      if (ponyVFC && ponyVideo && ponyVideo.cancelVideoFrameCallback) ponyVideo.cancelVideoFrameCallback(ponyRAF);
+      else cancelAnimationFrame(ponyRAF);
+      ponyRAF = 0;
+    }
     if (ponyVideo) { try { ponyVideo.pause(); } catch (e) {} ponyVideo = null; }
+    ponyVFC = false;
     cancelSlides();
   }
 
@@ -247,18 +252,23 @@
     cv.style.objectFit = "cover";                  // fill the window opening, crop overflow
     cv.width = 840; cv.height = 766;
     wrap.appendChild(v); wrap.appendChild(cv);
-    const cx = cv.getContext("2d");
+    const cx = cv.getContext("2d", { desynchronized: true });   // lower-latency present → less jank
     ponyVideo = v;
+    // Drive the canvas off the video's OWN frame cadence (requestVideoFrameCallback)
+    // when available: it fires once per decoded video frame, so we stop redrawing the
+    // same frame on every 60fps tick (that wasted, contended work was the stutter).
+    // Fall back to requestAnimationFrame where rVFC isn't supported.
+    ponyVFC = typeof v.requestVideoFrameCallback === "function";
     const draw = () => {
       if (active !== "pony") return;
       if (v.videoWidth) {
         if (cv.width !== v.videoWidth) { cv.width = v.videoWidth; cv.height = v.videoHeight; }
         cx.drawImage(v, 0, 0, cv.width, cv.height);
       }
-      ponyRAF = requestAnimationFrame(draw);
+      ponyRAF = ponyVFC ? v.requestVideoFrameCallback(draw) : requestAnimationFrame(draw);
     };
     v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });   // unmuted needs the click gesture; if refused, drop to muted so it still plays
-    ponyRAF = requestAnimationFrame(draw);
+    ponyRAF = ponyVFC ? v.requestVideoFrameCallback(draw) : requestAnimationFrame(draw);
   }
 
   // ---- the slide-to-centre sprite ----------------------------------------
