@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <title>Cursor Canvas — kres 2026</title>
-  <link rel="stylesheet" href="frames.css" />
+  <link rel="stylesheet" href="frames.css?v=2026-06-22b" />
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; background: #07070b; cursor: none; }
     #stage, #fx { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: block; }
@@ -34,8 +34,10 @@
   <canvas id="fx"></canvas>
   <div id="kres-frames"></div>               <!-- frame-takeover overlay (frames.js), above the canvases -->
   <div id="hud"></div>
-  <script src="frames.js"></script>          <!-- frame system: must define window.Frames before viewer.js -->
-  <script src="viewer.js"></script>          <!-- pixel scene + all state (classic script) -->
-  <script type="module" src="fx.js"></script> <!-- WebGL glow layer (three.js) -->
+  <script src="frames.js?v=2026-06-22b"></script>          <!-- frame system: must define window.Frames before viewer.js -->
+  <script src="viewer.js?v=2026-06-22b"></script>          <!-- pixel scene + all state (classic script) -->
+  <script type="module" src="fx.js?v=2026-06-22b"></script> <!-- WebGL glow layer (three.js) -->
+  <!-- bump ?v= on the three tags above whenever you change the JS/CSS, so browsers can't serve a stale copy -->
+
 </body>
 </html>
