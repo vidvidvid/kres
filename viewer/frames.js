@@ -12,7 +12,7 @@
   const STAGE_W = 1080, STAGE_H = 1920;
   const WIN = { cx: 540, cy: 1156 };          // centre of spredaj.png's window opening (0.500, 0.602)
   const FIT = { w: 820, h: 740 };             // element fit box (window opening, slightly inset)
-  const RAD = { w: 1080, h: 820 };            // radial-glow box: full frame width, anchored to the bottom edge
+  const RAD = { w: 839, h: 766 };             // radial-glow box = the window box (839x766); CSS anchors its bottom + sides to that box
   const RESET_MS = 30000;                     // a frame lasts 30s, then back to the landing
   const FV = "?v=2026-06-22";                 // cache-bust for swapped art
 
@@ -32,7 +32,7 @@
 
   // soft warm glow built from each radial's stop colours (white core -> mids -> clear)
   const glow = (c1, c2, c3, mid) =>
-    `radial-gradient(ellipse 58% 48% at 50% 50%,` +     // reaches the side + bottom edges of its box
+    `radial-gradient(ellipse 54% 52% at 50% 50%,` +     // fills toward the side + bottom edges of the window box
     ` rgba(255,255,255,0.95) 0%, ${c1} 12%, ${c2} 24%, ${c3} 36%,` +
     ` rgba(255,255,255,${mid}) 54%, rgba(249,249,249,0) 82%)`;
 
@@ -45,17 +45,17 @@
     "ornament": { bg: "frames/ornament/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.5),
       element: { kind: "inline", src: "frames/ornament/element.svg", blend: "screen", anim: "none", iw: 465, ih: 569, scale: 0.62 } },
     "spiral-cat": { bg: "frames/spiral-cat/ozadje.png", radial: glow("#795882", "#1C3E3E", "#477788", 0.7),
-      element: { kind: "img", src: "frames/spiral-cat/element.svg", blend: "multiply", anim: "float", iw: 406, ih: 338, scale: 0.36 } },
+      element: { kind: "img", src: "frames/spiral-cat/element.svg", blend: "multiply", anim: "float", iw: 406, ih: 338, scale: 0.44 } },
     "bambi": { bg: "frames/bambi/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.4),
-      element: { kind: "img", src: "frames/bambi/element.svg", blend: "screen", anim: "float", iw: 352, ih: 352, scale: 0.34 } },
+      element: { kind: "img", src: "frames/bambi/element.svg", blend: "screen", anim: "float", iw: 352, ih: 352, scale: 0.42 } },
     "pony": { bg: "frames/pony/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.35),
       element: { kind: "video", src: "frames/pony/video.mp4", blend: "pluslighter", anim: "none", boxW: 840, boxH: 766 } },
     "spiral-kitten": { bg: "frames/spiral-kitten/ozadje.png", radial: glow("#795882", "#3F2B11", "#766D62", 0.4),
-      element: { kind: "img", src: "frames/spiral-kitten/element.svg", blend: "normal", anim: "float", iw: 195, ih: 224, scale: 0.29 } },
+      element: { kind: "img", src: "frames/spiral-kitten/element.svg", blend: "normal", anim: "float", iw: 195, ih: 224, scale: 0.36 } },
     "nia": { bg: "frames/nia/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.4),
-      element: { kind: "img", src: "frames/nia/element.svg", blend: "normal", anim: "float", iw: 249, ih: 224, scale: 0.29 } },
+      element: { kind: "img", src: "frames/nia/element.svg", blend: "normal", anim: "float", iw: 249, ih: 224, scale: 0.36 } },
     "deer": { bg: "frames/deer/ozadje.png", radial: glow("#795882", "#BFB1E8", "#556272", 0.4),
-      element: { kind: "img", src: "frames/deer/element.svg", blend: "normal", anim: "float", iw: 263, ih: 242, scale: 0.29 } },
+      element: { kind: "img", src: "frames/deer/element.svg", blend: "normal", anim: "float", iw: 263, ih: 242, scale: 0.36 } },
   };
 
   function fitBox(iw, ih, scale) {

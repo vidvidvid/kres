@@ -36,7 +36,7 @@
 /* radial glow — its own minimal layer so hue-rotate only repaints this box */
 .kf-radial {
   position: absolute; z-index: 3;
-  left: 50%; bottom: 0; transform: translateX(-50%);   /* aligned to the frame's bottom + side edges */
+  left: 50%; bottom: 381px; transform: translateX(-50%);   /* bottom + sides aligned to the window box (box bottom y1539 → 1920-1539=381) */
   mix-blend-mode: screen;
   will-change: filter;
   animation: kf-hue 16s linear infinite, kf-glow-pulse 3.4s ease-in-out infinite;
