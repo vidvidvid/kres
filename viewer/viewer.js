@@ -30,7 +30,7 @@ const ZIVALICE = [
   { key: "spiral-kitten", frame: "spiral-kitten", src: "assets/zivalice/spiral-kitten.svg", w: 78,  h: 83 },
   { key: "pony-lullaby",  frame: "pony",          src: "assets/zivalice/pony-lullaby.svg",  w: 119, h: 105 },
 ];
-const CURSOR_H = Number(params.get("size") || 90);
+const CURSOR_H = Number(params.get("size") || 120);   // match the arc switcher (frames.js arc box is 120 tall)
 
 const SMOOTHING = 0.22;
 const FADE_AFTER_MS = 4000;
@@ -83,9 +83,11 @@ function loadImage(src) {
   const url = src + (src.indexOf("?") < 0 ? "?v=" + ASSET_VER : "");
   return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = url; });
 }
-let bgImg = null, spredajImg = null;
-loadImage("assets/landing.png").then((i) => (bgImg = i));   // the landing scene background
-loadImage("assets/spredaj.png").then((i) => (spredajImg = i));   // the ornamental window frame, drawn in FRONT of the roaming animals
+let bgImg = null, spredajImg = null, textboxImg = null, paperImg = null;
+loadImage("assets/landing.png").then((i) => (bgImg = i));        // the landing scene background
+loadImage("assets/textbox.png").then((i) => (textboxImg = i));   // text card — behind the frame plants
+loadImage("assets/spredaj.png").then((i) => (spredajImg = i));   // ornamental frame (plants), in FRONT of the animals + textbox
+loadImage("assets/plus-darker.png").then((i) => (paperImg = i)); // paper texture, multiply over everything
 const zivalice = ZIVALICE.map((z) => ({ img: null, aspect: z.w / z.h, key: z.key, frame: z.frame, src: z.src }));
 ZIVALICE.forEach((z, i) => loadImage(z.src).then((img) => (zivalice[i].img = img)));
 
@@ -610,7 +612,10 @@ function frame(now) {
     idle = live === 0;
     if (SHOW_FIRE) { computeFireRect(); updateFire(now, dt); drawFire(); }
     if (!idle) for (const [, c] of cursors) drawCursor(c, now);
-    if (spredajImg) ctx.drawImage(spredajImg, stageX, stageY, stageW, stageH);   // ornamental window frame in front of the scene
+    // Same overall-frame stack as the scenery frames: text card → plants → paper.
+    if (textboxImg) ctx.drawImage(textboxImg, stageX, stageY, stageW, stageH);   // text card, behind the plants
+    if (spredajImg) ctx.drawImage(spredajImg, stageX, stageY, stageW, stageH);   // ornamental frame (plants) in front
+    if (paperImg) { ctx.save(); ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = 0.6; ctx.drawImage(paperImg, stageX, stageY, stageW, stageH); ctx.restore(); }   // paper texture over everything
     drawMotherCursor(now);
   }
   // (when a frame is active the DOM overlay covers the canvas, so we skip drawing it)

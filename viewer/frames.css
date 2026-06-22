@@ -28,10 +28,10 @@
 
 #kf-frame > .kf-layer { position: absolute; inset: 0; width: 1080px; height: 1920px; }
 .kf-bg         { z-index: 1; background-size: 100% 100%; background-position: center; }
-.kf-spredaj    { z-index: 4; background-size: 100% 100%; }
-.kf-difference { z-index: 5; background-size: 100% 100%; mix-blend-mode: difference; }
-.kf-plusdarker { z-index: 6; background-size: 100% 100%; mix-blend-mode: multiply; opacity: .6; }  /* plus-darker → multiply in Chromium */
-.kf-textbox    { z-index: 7; background-size: 100% 100%; animation: kf-tb-pulse 2s ease-in-out infinite; }
+.kf-textbox    { z-index: 4; background-size: 100% 100%; animation: kf-tb-pulse 2s ease-in-out infinite; }  /* behind the frame plants */
+.kf-spredaj    { z-index: 5; background-size: 100% 100%; }                                                  /* overall frame (plants) in front of the textbox */
+.kf-difference { z-index: 6; background-size: 100% 100%; mix-blend-mode: difference; }
+.kf-plusdarker { z-index: 7; background-size: 100% 100%; mix-blend-mode: multiply; opacity: .6; }  /* paper, over everything (plus-darker → multiply in Chromium) */
 
 /* radial glow — its own minimal layer so hue-rotate only repaints this box */
 .kf-radial {
@@ -55,7 +55,7 @@
 
 /* gentle in-place float (transform) + a one-shot opacity fade-in — separate
    properties so the two animations never fight over `transform`. */
-.kf-float   { animation: kf-float var(--float-dur, 5.5s) ease-in-out infinite, kf-fade .55s ease-out both; }
+.kf-float   { animation: kf-float var(--float-dur, 4.4s) ease-in-out infinite, kf-fade .55s ease-out both; }
 /* fire-roses: stems anchored, blooms sway (transform) + bonfire flutter (filter) + fade-in (opacity) */
 .kf-rose    { transform-origin: 50% 100%; animation: kf-rose-float 4.6s ease-in-out infinite, kf-rose-flutter .9s steps(6) infinite, kf-fade .55s ease-out both; }
 /* fade-in only — ornament svg + pony canvas (their motion is JS/video driven) */
@@ -81,8 +81,8 @@
 
 /* ---- keyframes ------------------------------------------------------------ */
 @keyframes kf-float {
-  0%, 100% { transform: translateY(0) rotate(-1deg); }
-  50%      { transform: translateY(-16px) rotate(1.2deg); }
+  0%, 100% { transform: translateY(10px) rotate(-2.4deg); }
+  50%      { transform: translateY(-26px) rotate(2.4deg); }
 }
 @keyframes kf-rose-float {
   0%, 100% { transform: translateY(0) rotate(-1.6deg); }

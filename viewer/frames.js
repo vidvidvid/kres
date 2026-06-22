@@ -12,7 +12,7 @@
   const STAGE_W = 1080, STAGE_H = 1920;
   const WIN = { cx: 540, cy: 1156 };          // centre of spredaj.png's window opening (0.500, 0.602)
   const FIT = { w: 820, h: 740 };             // element fit box (window opening, slightly inset)
-  const RAD = { w: 920, h: 1200 };            // radial-glow box (tall vertical bloom)
+  const RAD = { w: 1240, h: 900 };            // radial-glow box (wide horizontal/"lying" bloom)
   const RESET_MS = 30000;                     // a frame lasts 30s, then back to the landing
   const FV = "?v=2026-06-22";                 // cache-bust for swapped art
 
@@ -32,7 +32,7 @@
 
   // soft warm glow built from each radial's stop colours (white core -> mids -> clear)
   const glow = (c1, c2, c3, mid) =>
-    `radial-gradient(ellipse 44% 54% at 50% 50%,` +
+    `radial-gradient(ellipse 56% 40% at 50% 50%,` +     // wider than tall → horizontal "lying" glow
     ` rgba(255,255,255,0.95) 0%, ${c1} 12%, ${c2} 24%, ${c3} 36%,` +
     ` rgba(255,255,255,${mid}) 54%, rgba(249,249,249,0) 82%)`;
 
@@ -53,9 +53,9 @@
     "spiral-kitten": { bg: "frames/spiral-kitten/ozadje.png", radial: glow("#795882", "#3F2B11", "#766D62", 0.4),
       element: { kind: "img", src: "frames/spiral-kitten/element.svg", blend: "screen", anim: "float", iw: 195, ih: 224, scale: 0.29 } },
     "nia": { bg: "frames/nia/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.4),
-      element: { kind: "img", src: "frames/nia/element.svg", blend: "screen", anim: "float", iw: 249, ih: 224, scale: 0.29 } },
+      element: { kind: "img", src: "frames/nia/element.svg", blend: "normal", anim: "float", iw: 249, ih: 224, scale: 0.29 } },
     "deer": { bg: "frames/deer/ozadje.png", radial: glow("#795882", "#BFB1E8", "#556272", 0.4),
-      element: { kind: "img", src: "frames/deer/element.svg", blend: "screen", anim: "float", iw: 263, ih: 242, scale: 0.29 } },
+      element: { kind: "img", src: "frames/deer/element.svg", blend: "normal", anim: "float", iw: 263, ih: 242, scale: 0.29 } },
   };
 
   function fitBox(iw, ih, scale) {
@@ -71,6 +71,12 @@
   const frame = document.createElement("div"); frame.id = "kf-frame";
   const arc = document.createElement("div"); arc.id = "kf-arc";
   fit.appendChild(frame); fit.appendChild(arc); root.appendChild(fit);
+
+  // The textbox lives OUTSIDE the per-frame rebuild: switching animals re-creates
+  // every other layer, but a fresh element would restart its pink pulse from 0.
+  // Keeping this one element means the pulse runs continuously across switches.
+  const textbox = layer("kf-textbox", "textbox.png");
+  frame.appendChild(textbox);
 
   // state
   let active = null;          // current frame key, or null on the landing
@@ -99,37 +105,27 @@
   function open(key, fromX, fromY, animalSrc) {
     const cfg = FRAMES[key];
     if (!cfg) return;
-    teardownElement();                       // stop any pony loop / ornament waves from the previous frame
-    frame.innerHTML = "";
-    active = key;
-
-    // 1) background
-    frame.appendChild(layer("kf-bg", cfg.bg));
-    // 2) hue-cycling radial glow
-    if (cfg.radial) {
-      const g = document.createElement("div");
-      g.className = "kf-radial";
-      g.style.width = RAD.w + "px"; g.style.height = RAD.h + "px";
-      g.style.background = cfg.radial;
-      frame.appendChild(g);
-    }
-    // 3) element
-    buildElement(cfg.element);
-    // 4) ornamental window frame, 5) difference columns, 6) plus-darker wash, 7) textbox
-    frame.appendChild(layer("kf-spredaj", "spredaj.png"));
-    frame.appendChild(layer("kf-difference", "difference.png"));
-    frame.appendChild(layer("kf-plusdarker", "plus-darker.png"));
-    frame.appendChild(layer("kf-textbox", "textbox.png"));
-
-    frame.style.display = "block";
-    void frame.offsetWidth;                  // reflow so the opacity transition runs
-    frame.classList.add("kf-on");
+    active = key;                            // claim now: isActive() true, the canvas stops, rapid clicks coalesce
+    cancelSlides();
+    if (animalSrc) slideIn(animalSrc, fromX, fromY);   // start the slide right away so the click feels instant
     document.body.style.cursor = "default";  // let a mouse operator see the pointer to aim at the switcher arc
-
-    if (animalSrc) slideIn(animalSrc, fromX, fromY);
-
     clearTimeout(resetTimer);
     resetTimer = setTimeout(close, RESET_MS);
+    // Preload the new background, then swap the visible layers only once it has
+    // decoded.  The old frame stays up until then, so switching never blanks to
+    // the canvas underneath — that blank was the "zablisk".  The other layers
+    // are static PNGs, cached after the first frame, so they paint instantly.
+    const pre = new Image();
+    pre.onload = pre.onerror = () => {
+      if (active !== key) return;            // a newer click already superseded this one
+      teardownElement();                     // stop the previous frame's pony audio / ornament waves
+      clearExceptTextbox();                  // wipe the old layers but keep the still-pulsing textbox
+      buildFrame(frame, cfg);
+      frame.style.display = "block";
+      void frame.offsetWidth;                // reflow so the opacity transition runs (first open)
+      frame.classList.add("kf-on");
+    };
+    pre.src = A(cfg.bg);
   }
 
   function close() {
@@ -137,14 +133,20 @@
     active = null;
     frame.classList.remove("kf-on");
     document.body.style.cursor = "";         // back to the clean hidden cursor on the landing
-    setTimeout(() => { if (!active) { frame.style.display = "none"; frame.innerHTML = ""; teardownElement(); } }, 520);
+    setTimeout(() => { if (!active) { frame.style.display = "none"; clearExceptTextbox(); teardownElement(); } }, 520);
   }
 
+  function clearExceptTextbox() {
+    for (const c of Array.from(frame.children)) if (c !== textbox) c.remove();
+  }
+  function cancelSlides() {
+    while (slides.length) { const s = slides.pop(); s.getAnimations().forEach((a) => a.cancel()); s.remove(); }
+  }
   function teardownElement() {
     if (ornamentTimer) { clearInterval(ornamentTimer); ornamentTimer = 0; }
     if (ponyRAF) { cancelAnimationFrame(ponyRAF); ponyRAF = 0; }
     if (ponyVideo) { try { ponyVideo.pause(); } catch (e) {} ponyVideo = null; }
-    while (slides.length) { const s = slides.pop(); s.getAnimations().forEach((a) => a.cancel()); s.remove(); }
+    cancelSlides();
   }
 
   function layer(cls, asset) {
@@ -154,8 +156,27 @@
     return d;
   }
 
+  // Build the whole layer stack into `parent`.  Final stacking is set by z-index
+  // in the CSS (bottom→top): bg → radial → element → textbox → spredaj(plants)
+  // → difference → plus-darker paper (over everything).
+  function buildFrame(parent, cfg) {
+    parent.appendChild(layer("kf-bg", cfg.bg));
+    if (cfg.radial) {
+      const g = document.createElement("div");
+      g.className = "kf-radial";
+      g.style.width = RAD.w + "px"; g.style.height = RAD.h + "px";
+      g.style.background = cfg.radial;
+      parent.appendChild(g);
+    }
+    buildElement(parent, cfg.element);
+    // (kf-textbox is the persistent element created at scaffold time — not rebuilt here)
+    parent.appendChild(layer("kf-spredaj", "spredaj.png"));    // overall ornamental frame (plants) in front of the textbox
+    parent.appendChild(layer("kf-difference", "difference.png"));
+    parent.appendChild(layer("kf-plusdarker", "plus-darker.png"));   // paper texture, over everything
+  }
+
   // ---- the floating element ----------------------------------------------
-  function buildElement(el) {
+  function buildElement(parent, el) {
     const wrap = document.createElement("div");
     // blend lives on the wrapper (a direct child of #kf-frame) so it composites
     // against the bg+radial below it, not the empty backdrop of a nested context.
@@ -175,7 +196,7 @@
     } else if (el.kind === "video") {
       ponyVideoElement(wrap, el);
     }
-    frame.appendChild(wrap);
+    parent.appendChild(wrap);
   }
 
   // Ornament: inline the SVG so each "pixel" cell can shimmer/reconfigure here and
