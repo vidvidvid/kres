@@ -1,0 +1,105 @@
+/* kres 2026 — frame overlay (the "scenery takeover" that opens when an animal /
+   the fire / the ornament panel is clicked).  A DOM/CSS layer ABOVE the canvas
+   scene (#stage z1, #fx z2).  Everything lives in a fixed 1080x1920 coordinate
+   box (#kf-fit) that is scaled+positioned to match the letterboxed stage, so all
+   numbers below are in true 1080x1920 stage pixels.  Blend modes are chosen for
+   Edge/Chromium: no plus-darker (use multiply), no blend on <video> (we draw it
+   to a <canvas>), hue cycling via filter:hue-rotate on its own layer. */
+
+#kres-frames {
+  position: fixed; inset: 0; z-index: 5;
+  pointer-events: none;            /* clicks fall through to the canvas unless on an interactive child */
+  overflow: hidden;
+}
+#kf-fit {
+  position: absolute; top: 0; left: 0;
+  width: 1080px; height: 1920px;
+  transform-origin: 0 0;           /* JS sets translate()+scale() to the stage rect */
+}
+
+/* ---- one active frame ------------------------------------------------------ */
+#kf-frame {
+  position: absolute; inset: 0;
+  isolation: isolate;              /* keep blends scoped to the frame, not the page */
+  opacity: 0; transition: opacity .5s ease;
+  display: none;
+}
+#kf-frame.kf-on { opacity: 1; }
+
+#kf-frame > .kf-layer { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+.kf-bg         { z-index: 1; background-size: 100% 100%; background-position: center; }
+.kf-spredaj    { z-index: 4; background-size: 100% 100%; }
+.kf-difference { z-index: 5; background-size: 100% 100%; mix-blend-mode: difference; }
+.kf-plusdarker { z-index: 6; background-size: 100% 100%; mix-blend-mode: multiply; opacity: .6; }  /* plus-darker → multiply in Chromium */
+.kf-textbox    { z-index: 7; background-size: 100% 100%; animation: kf-tb-pulse 2s ease-in-out infinite; }
+
+/* radial glow — its own minimal layer so hue-rotate only repaints this box */
+.kf-radial {
+  position: absolute; z-index: 2;
+  left: 50%; top: 60.2%; transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+  will-change: filter;
+  animation: kf-hue 16s linear infinite, kf-glow-pulse 3.4s ease-in-out infinite;
+}
+
+/* the floating element (animal / fire-roses / ornament / pony) */
+.kf-elem-wrap {
+  position: absolute; z-index: 3;
+  left: 50%; top: 60.2%; transform: translate(-50%, -50%);
+}
+.kf-elem { width: 100%; height: 100%; display: block; }
+.kf-elem.kf-img { object-fit: contain; }
+.kf-screen      { mix-blend-mode: screen; }    /* on the wrapper (direct child of #kf-frame) so it blends against bg+radial */
+.kf-multiply    { mix-blend-mode: multiply; }
+.kf-pluslighter { mix-blend-mode: plus-lighter; }   /* pony video — additive, as the artist specified (Chromium-safe on <canvas>) */
+
+/* gentle in-place float (transform) + a one-shot opacity fade-in — separate
+   properties so the two animations never fight over `transform`. */
+.kf-float   { animation: kf-float var(--float-dur, 5.5s) ease-in-out infinite, kf-fade .55s ease-out both; }
+/* fire-roses: stems anchored, blooms sway (transform) + bonfire flutter (filter) + fade-in (opacity) */
+.kf-rose    { transform-origin: 50% 100%; animation: kf-rose-float 4.6s ease-in-out infinite, kf-rose-flutter .9s steps(6) infinite, kf-fade .55s ease-out both; }
+/* fade-in only — ornament svg + pony canvas (their motion is JS/video driven) */
+.kf-fade-in { animation: kf-fade .55s ease-out both; }
+
+/* ---- the 6-animal arc (standby display + in-frame switcher) ---------------- */
+#kf-arc { position: absolute; inset: 0; z-index: 20; opacity: 0; transition: opacity .45s ease; pointer-events: none; }
+#kf-arc.kf-on { opacity: 1; }
+.kf-arc-animal {
+  position: absolute; transform: translate(-50%, -50%);
+  cursor: pointer; pointer-events: none;             /* only clickable while the arc is shown (rule below) */
+  filter: drop-shadow(0 0 10px rgba(255, 220, 170, .35));
+  transition: filter .18s ease;
+  animation: kf-arc-bob var(--bob-dur, 4s) ease-in-out infinite;
+}
+#kf-arc.kf-on .kf-arc-animal { pointer-events: auto; }
+.kf-arc-animal:hover { filter: drop-shadow(0 0 16px rgba(255, 230, 190, .8)); }
+.kf-arc-animal img { width: 100%; height: 100%; display: block; pointer-events: none; }
+
+/* the sprite that slides from the clicked spot into the centre of the window */
+.kf-slide { position: absolute; z-index: 30; transform: translate(-50%, -50%); pointer-events: none; }
+.kf-slide img { width: 100%; height: 100%; display: block; }
+
+/* ---- keyframes ------------------------------------------------------------ */
+@keyframes kf-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50%      { transform: translateY(-16px) rotate(1.2deg); }
+}
+@keyframes kf-rose-float {
+  0%, 100% { transform: translateY(0) rotate(-1.6deg); }
+  50%      { transform: translateY(-12px) rotate(1.6deg); }
+}
+@keyframes kf-rose-flutter {     /* discrete pixel-stutter brightness, like the bonfire */
+  0%   { filter: brightness(1)    saturate(1.05) hue-rotate(0deg); }
+  25%  { filter: brightness(1.22) saturate(1.25) hue-rotate(-6deg); }
+  50%  { filter: brightness(.95)  saturate(1)    hue-rotate(4deg); }
+  75%  { filter: brightness(1.15) saturate(1.2)  hue-rotate(-3deg); }
+  100% { filter: brightness(1)    saturate(1.05) hue-rotate(0deg); }
+}
+@keyframes kf-hue        { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
+@keyframes kf-glow-pulse { 0%, 100% { opacity: .82; } 50% { opacity: 1; } }
+@keyframes kf-tb-pulse {         /* the textbox's pink glow breathes */
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(235, 165, 242, .35)); }
+  50%      { filter: drop-shadow(0 0 20px rgba(235, 165, 242, .9)); }
+}
+@keyframes kf-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes kf-arc-bob { 0%, 100% { transform: translate(-50%, -50%) translateY(0); } 50% { transform: translate(-50%, -50%) translateY(-7px); } }

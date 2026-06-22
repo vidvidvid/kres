@@ -17,6 +17,10 @@ deploy/
 cursor-canvas.zip
 kres-display.configured
 
+# Pony Lullaby video — 163 MB, over GitHub's 100 MB limit. Lives only on the
+# display machine's viewer/assets/frames/pony/video.mp4 (copied from the art folder).
+viewer/assets/frames/pony/video.mp4
+
 # OS
 .DS_Store
 **/.DS_Store

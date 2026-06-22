@@ -15,6 +15,12 @@ Copy the project folder over, then double-click  build-all.bat
    then run it again.)
 You get a  deploy\  folder. No show machine needs Python after this.
 
+  PONY VIDEO (one extra file): the Pony Lullaby clip is too big for GitHub, so
+  it is NOT in the repo. Before building, put it at
+     viewer\assets\frames\pony\video.mp4
+  (copy it from the art folder "elementi 2\pony lullaby video plus lighter.mp4").
+  Without it, every other frame works; only the Pony frame is blank.
+
 
 2. DISPLAY PC
 -------------

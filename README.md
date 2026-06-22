@@ -25,6 +25,11 @@ Everything runs on the **same Wi‑Fi**. No internet is needed during the show.
 
 You only need internet and this step **once**. The show computers never need Python.
 
+> 🎠 **One extra file — the Pony video.** It's too large for GitHub, so it isn't in the
+> download. Before you build, copy the Pony Lullaby video into
+> `viewer/assets/frames/pony/video.mp4`. Everything else works without it; only the
+> Pony scene would be blank.
+
 ---
 
 ## Step 1 — Set up the screen computer 🖥️

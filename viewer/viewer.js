@@ -20,12 +20,15 @@ const SHOW_LIGHTNING = params.has("lightning");   // OFF by default — no bolts
 
 const STAGE_W = 1080, STAGE_H = 1920;
 
+// The 6 named animals. A cursor is assigned one by id-hash (so >6 visitors just
+// reuse them). `frame` is the scenery that opens when this animal is clicked.
 const ZIVALICE = [
-  { src: "assets/zivalice/animal1.svg", w: 110, h: 92 },
-  { src: "assets/zivalice/animal2.svg", w: 101, h: 82 },
-  { src: "assets/zivalice/animal3.svg", w: 114, h: 112 },
-  { src: "assets/zivalice/animal4.svg", w: 78, h: 83 },
-  { src: "assets/zivalice/animal5.svg", w: 106, h: 93 },
+  { key: "bambi",         frame: "bambi",         src: "assets/zivalice/bambi.svg",         w: 114, h: 112 },
+  { key: "spiral-cat",    frame: "spiral-cat",    src: "assets/zivalice/spiral-cat.svg",    w: 110, h: 92 },
+  { key: "nia",           frame: "nia",           src: "assets/zivalice/nia.svg",           w: 101, h: 82 },
+  { key: "deer",          frame: "deer",          src: "assets/zivalice/deer.svg",          w: 106, h: 93 },
+  { key: "spiral-kitten", frame: "spiral-kitten", src: "assets/zivalice/spiral-kitten.svg", w: 78,  h: 83 },
+  { key: "pony-lullaby",  frame: "pony",          src: "assets/zivalice/pony-lullaby.svg",  w: 119, h: 105 },
 ];
 const CURSOR_H = Number(params.get("size") || 90);
 
@@ -75,17 +78,14 @@ resize();
 // ---- Assets -------------------------------------------------------------
 // Bump ASSET_VER whenever you replace a PNG so browsers can't serve a stale copy
 // (or pass ?v=anything in the URL). The ?v= query busts the image cache.
-const ASSET_VER = params.get("v") || "2026-06-17b";
+const ASSET_VER = params.get("v") || "2026-06-22";
 function loadImage(src) {
   const url = src + (src.indexOf("?") < 0 ? "?v=" + ASSET_VER : "");
   return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = url; });
 }
-let bgImg = null, normalImg = null, diffImg = null, paperImg = null;
-loadImage("assets/ozadje.png").then((i) => (bgImg = i));
-loadImage("assets/normal.png").then((i) => (normalImg = i));
-loadImage("assets/difference.png").then((i) => (diffImg = i));
-loadImage("assets/paper.png").then((i) => (paperImg = i));
-const zivalice = ZIVALICE.map((z) => ({ img: null, aspect: z.w / z.h }));
+let bgImg = null;
+loadImage("assets/landing.png").then((i) => (bgImg = i));   // the landing scene; frames draw their own bg via the DOM overlay
+const zivalice = ZIVALICE.map((z) => ({ img: null, aspect: z.w / z.h, key: z.key, frame: z.frame, src: z.src }));
 ZIVALICE.forEach((z, i) => loadImage(z.src).then((img) => (zivalice[i].img = img)));
 
 function hashId(id) { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0; return h; }
@@ -511,64 +511,27 @@ function drawFire() {
   else paintFlames(ctx, (g) => { g.translate(fireX, fireY); g.scale(fireScale, fireScaleY); });
 }
 
-// ---- Click messages (cute pixel text in the bottom box) -----------------
-const MESSAGES = [
-  "you found a friend",
-  "the fire likes you",
-  "stay a while <3",
-  "warm wishes",
-  "you make it glow",
-  "a tiny hello",
-  "dance with us",
-  "the night is young",
-  "you sparkle",
-  "kres burns bright",
-];
-// where the text sits, as fractions of the 1080x1920 stage (tune to the box art)
-const MSG_BOX = { cx: 0.5, cy: 0.940, w: 0.80, h: 0.085 };
-const MSG_DURATION = 4500, MSG_FADE = 700, MSG_COLOR = "rgb(250,240,210)";
-const msgCanvas = document.createElement("canvas");
-const msgCtx = msgCanvas.getContext("2d");
-let msgAt = -1e9;
-function showMessage() {
-  const txt = pick(MESSAGES), fontPx = 18, pad = 6;
-  msgCtx.font = `bold ${fontPx}px ui-monospace, "Courier New", monospace`;
-  const tw = Math.max(1, Math.ceil(msgCtx.measureText(txt).width));
-  msgCanvas.width = tw + pad * 2; msgCanvas.height = fontPx + pad * 2;   // (resizing clears the canvas)
-  msgCtx.font = `bold ${fontPx}px ui-monospace, "Courier New", monospace`;
-  msgCtx.textBaseline = "middle"; msgCtx.textAlign = "center";
-  msgCtx.fillStyle = MSG_COLOR;
-  msgCtx.fillText(txt, msgCanvas.width / 2, msgCanvas.height / 2);
-  msgAt = performance.now();
-}
-function drawMessage(now) {
-  if (msgAt < 0 || msgCanvas.width < 2) return;
-  const age = now - msgAt;
-  if (age > MSG_DURATION + MSG_FADE) return;
-  const alpha = age < MSG_DURATION ? 1 : Math.max(0, 1 - (age - MSG_DURATION) / MSG_FADE);
-  const boxW = stageW * MSG_BOX.w, boxH = stageH * MSG_BOX.h;
-  const cx = stageX + stageW * MSG_BOX.cx, cy = stageY + stageH * MSG_BOX.cy;
-  let s = (boxH * 0.62) / msgCanvas.height;                            // consistent text height...
-  if (msgCanvas.width * s > boxW * 0.96) s = (boxW * 0.96) / msgCanvas.width;   // ...shrink only if too wide
-  const dw = msgCanvas.width * s, dh = msgCanvas.height * s;
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.imageSmoothingEnabled = false;                                  // chunky pixel text, like the flame
-  ctx.drawImage(msgCanvas, cx - dw / 2, cy - dh / 2, dw, dh);
-  ctx.restore();
-}
-
 // ---- Mother cursor + input ----------------------------------------------
 const mother = { x: W / 2, y: H / 2, active: false };
 window.addEventListener("mousemove", (e) => { mother.x = e.clientX; mother.y = e.clientY; mother.active = true; });
+// Click on the main screen opens a frame: a roaming animal -> its scenery (it
+// slides to centre); the central fire -> fire-roses; the ornament panel ->
+// ornament. During a frame the canvas is covered and only the DOM arc switches,
+// so we bail out. Hotspots are in 1080x1920 stage space.
+const ORN_HOT = { x0: 470, x1: 607, y0: 384, y1: 864 };   // back-wall ornament panel
+const FIRE_HOT = { x: 540, y: 1050, r: 230 };             // central bonfire / glow (covers the rendered flame body)
+let sceneIdle = false;                                     // set each frame: no live cursors → standby arc shown
 window.addEventListener("click", (e) => {
-  const hitR = CURSOR_H * stageScale * 0.6;
-  let best = null, bestD = hitR;
-  for (const [, c] of cursors) { const d = Math.hypot(sx(c) - e.clientX, sy(c) - e.clientY); if (d <= bestD) { bestD = d; best = c; } }
-  if (best) {
-    best.clicks++; best.energy = Math.min(best.energy + ENERGY_PER_CLICK, ENERGY_MAX); best.lastClick = performance.now();
-    showMessage();   // a cute pixel message in the box below (no more click bursts/lightning)
+  if (!window.Frames || Frames.isActive()) return;
+  const lx = (e.clientX - stageX) / stageScale, ly = (e.clientY - stageY) / stageScale;
+  if (!sceneIdle) {   // when idle the roaming animals are gone (only the DOM arc) — don't match faded ghosts
+    let best = null, bestD = CURSOR_H * stageScale * 0.7;
+    for (const [, c] of cursors) { if (c.alpha < 0.5) continue; const d = Math.hypot(sx(c) - e.clientX, sy(c) - e.clientY); if (d <= bestD) { bestD = d; best = c; } }
+    if (best) { const sp = spriteFor(best.id);                 // slide starts at the animal's centre, not the raw click point
+      Frames.open(sp.frame, (sx(best) - stageX) / stageScale, (sy(best) - stageY) / stageScale, sp.src); return; }
   }
+  if (lx > ORN_HOT.x0 && lx < ORN_HOT.x1 && ly > ORN_HOT.y0 && ly < ORN_HOT.y1) { Frames.open("ornament", lx, ly, null); return; }
+  if (Math.hypot(lx - FIRE_HOT.x, ly - FIRE_HOT.y) < FIRE_HOT.r) { Frames.open("fire-roses", lx, ly, null); return; }
 });
 function drawMotherCursor(now) {
   if (!mother.active) return;
@@ -609,12 +572,6 @@ function drawBackground() {
   ctx.fillStyle = "#07070b"; ctx.fillRect(0, 0, W, H);
   if (bgImg) ctx.drawImage(bgImg, stageX, stageY, stageW, stageH);
 }
-function drawLayer(img, mode) {
-  if (!img) return;
-  if (mode) ctx.globalCompositeOperation = mode;
-  ctx.drawImage(img, stageX, stageY, stageW, stageH);
-  if (mode) ctx.globalCompositeOperation = "source-over";
-}
 function drawCursor(c, now) {
   const px = sx(c), py = sy(c), sprite = spriteFor(c.id);
   const h = CURSOR_H * stageScale, w = h * sprite.aspect;
@@ -642,18 +599,21 @@ function frame(now) {
   maybeAmbient(now);
 
   computeStage();
-  drawBackground();
-  if (SHOW_FIRE) {
-    computeFireRect();
-    updateFire(now, dt);
-    drawFire();
+  const frameActive = !!(window.Frames && Frames.isActive());
+  let idle = false;
+  if (!frameActive) {
+    // The landing scene. When no one is moving a cursor (idle) the roaming
+    // animals give way to the standby arc (drawn in the DOM by frames.js).
+    drawBackground();
+    let live = 0; for (const [, c] of cursors) if (c.alpha > 0.5) live++;
+    idle = live === 0;
+    if (SHOW_FIRE) { computeFireRect(); updateFire(now, dt); drawFire(); }
+    if (!idle) for (const [, c] of cursors) drawCursor(c, now);
+    drawMotherCursor(now);
   }
-  for (const [, c] of cursors) drawCursor(c, now);
-  drawLayer(normalImg, null);
-  drawLayer(diffImg, "difference");
-  drawLayer(paperImg, "multiply");
-  drawMessage(now);
-  drawMotherCursor(now);
+  // (when a frame is active the DOM overlay covers the canvas, so we skip drawing it)
+  sceneIdle = idle;
+  if (window.Frames) Frames.tick({ x: stageX, y: stageY, w: stageW, h: stageH, scale: stageScale }, idle);
 
   // publish state for the WebGL glow layer
   window.KRES = {
