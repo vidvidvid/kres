@@ -83,8 +83,9 @@ function loadImage(src) {
   const url = src + (src.indexOf("?") < 0 ? "?v=" + ASSET_VER : "");
   return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = url; });
 }
-let bgImg = null;
-loadImage("assets/landing.png").then((i) => (bgImg = i));   // the landing scene; frames draw their own bg via the DOM overlay
+let bgImg = null, spredajImg = null;
+loadImage("assets/landing.png").then((i) => (bgImg = i));   // the landing scene background
+loadImage("assets/spredaj.png").then((i) => (spredajImg = i));   // the ornamental window frame, drawn in FRONT of the roaming animals
 const zivalice = ZIVALICE.map((z) => ({ img: null, aspect: z.w / z.h, key: z.key, frame: z.frame, src: z.src }));
 ZIVALICE.forEach((z, i) => loadImage(z.src).then((img) => (zivalice[i].img = img)));
 
@@ -609,6 +610,7 @@ function frame(now) {
     idle = live === 0;
     if (SHOW_FIRE) { computeFireRect(); updateFire(now, dt); drawFire(); }
     if (!idle) for (const [, c] of cursors) drawCursor(c, now);
+    if (spredajImg) ctx.drawImage(spredajImg, stageX, stageY, stageW, stageH);   // ornamental window frame in front of the scene
     drawMotherCursor(now);
   }
   // (when a frame is active the DOM overlay covers the canvas, so we skip drawing it)

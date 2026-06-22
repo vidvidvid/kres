@@ -45,17 +45,17 @@
     "ornament": { bg: "frames/ornament/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.5),
       element: { kind: "inline", src: "frames/ornament/element.svg", blend: "screen", anim: "none", iw: 465, ih: 569, scale: 0.62 } },
     "spiral-cat": { bg: "frames/spiral-cat/ozadje.png", radial: glow("#795882", "#1C3E3E", "#477788", 0.7),
-      element: { kind: "img", src: "frames/spiral-cat/element.svg", blend: "multiply", anim: "float", iw: 406, ih: 338, scale: 0.9 } },
+      element: { kind: "img", src: "frames/spiral-cat/element.svg", blend: "multiply", anim: "float", iw: 406, ih: 338, scale: 0.36 } },
     "bambi": { bg: "frames/bambi/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.4),
-      element: { kind: "img", src: "frames/bambi/element.svg", blend: "screen", anim: "float", iw: 352, ih: 352, scale: 0.85 } },
+      element: { kind: "img", src: "frames/bambi/element.svg", blend: "screen", anim: "float", iw: 352, ih: 352, scale: 0.34 } },
     "pony": { bg: "frames/pony/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.35),
       element: { kind: "video", src: "frames/pony/video.mp4", blend: "pluslighter", anim: "none", boxW: 840, boxH: 766 } },
     "spiral-kitten": { bg: "frames/spiral-kitten/ozadje.png", radial: glow("#795882", "#3F2B11", "#766D62", 0.4),
-      element: { kind: "img", src: "frames/spiral-kitten/element.svg", blend: "screen", anim: "float", iw: 195, ih: 224, scale: 0.7 } },
+      element: { kind: "img", src: "frames/spiral-kitten/element.svg", blend: "screen", anim: "float", iw: 195, ih: 224, scale: 0.29 } },
     "nia": { bg: "frames/nia/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.4),
-      element: { kind: "img", src: "frames/nia/element.svg", blend: "screen", anim: "float", iw: 249, ih: 224, scale: 0.7 } },
+      element: { kind: "img", src: "frames/nia/element.svg", blend: "screen", anim: "float", iw: 249, ih: 224, scale: 0.29 } },
     "deer": { bg: "frames/deer/ozadje.png", radial: glow("#795882", "#BFB1E8", "#556272", 0.4),
-      element: { kind: "img", src: "frames/deer/element.svg", blend: "screen", anim: "float", iw: 263, ih: 242, scale: 0.7 } },
+      element: { kind: "img", src: "frames/deer/element.svg", blend: "screen", anim: "float", iw: 263, ih: 242, scale: 0.29 } },
   };
 
   function fitBox(iw, ih, scale) {
@@ -214,7 +214,10 @@
   // fills the 840x766 window (the spredaj frame masks the overflow).
   function ponyVideoElement(wrap, el) {
     const v = document.createElement("video");
-    v.src = A(el.src); v.muted = true; v.loop = true; v.autoplay = true;
+    // Pony Lullaby plays WITH sound. open() runs inside a click handler, so the
+    // user gesture lets an unmuted video autoplay; if a browser still refuses we
+    // fall back to muted so the picture never freezes.
+    v.src = A(el.src); v.muted = false; v.volume = 1; v.loop = true; v.autoplay = true;
     v.playsInline = true; v.setAttribute("playsinline", ""); v.preload = "auto";
     v.style.cssText = "position:absolute;width:2px;height:2px;opacity:0;pointer-events:none;";
     const cv = document.createElement("canvas");
@@ -233,7 +236,7 @@
       }
       ponyRAF = requestAnimationFrame(draw);
     };
-    v.play().catch(() => {});                  // succeeds because the video is muted (muted autoplay is always allowed)
+    v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });   // unmuted needs the click gesture; if refused, drop to muted so it still plays
     ponyRAF = requestAnimationFrame(draw);
   }
 
