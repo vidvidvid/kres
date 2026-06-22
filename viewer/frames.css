@@ -28,15 +28,15 @@
 
 #kf-frame > .kf-layer { position: absolute; inset: 0; width: 1080px; height: 1920px; }
 .kf-bg         { z-index: 1; background-size: 100% 100%; background-position: center; }
-.kf-textbox    { z-index: 4; background-size: 100% 100%; animation: kf-tb-pulse 2s ease-in-out infinite; }  /* behind the frame plants */
-.kf-spredaj    { z-index: 5; background-size: 100% 100%; }                                                  /* overall frame (plants) in front of the textbox */
+.kf-textbox    { z-index: 2; background-size: 100% 100%; animation: kf-tb-pulse 2s ease-in-out infinite; }  /* sent to back — just over the bg */
+.kf-spredaj    { z-index: 5; background-size: 100% 100%; }                                                  /* overall frame (plants) */
 .kf-difference { z-index: 6; background-size: 100% 100%; mix-blend-mode: difference; }
 .kf-plusdarker { z-index: 7; background-size: 100% 100%; mix-blend-mode: multiply; opacity: .6; }  /* paper, over everything (plus-darker → multiply in Chromium) */
 
 /* radial glow — its own minimal layer so hue-rotate only repaints this box */
 .kf-radial {
-  position: absolute; z-index: 2;
-  left: 50%; top: 60.2%; transform: translate(-50%, -50%);
+  position: absolute; z-index: 3;
+  left: 50%; bottom: 0; transform: translateX(-50%);   /* aligned to the frame's bottom + side edges */
   mix-blend-mode: screen;
   will-change: filter;
   animation: kf-hue 16s linear infinite, kf-glow-pulse 3.4s ease-in-out infinite;
@@ -44,7 +44,7 @@
 
 /* the floating element (animal / fire-roses / ornament / pony) */
 .kf-elem-wrap {
-  position: absolute; z-index: 3;
+  position: absolute; z-index: 4;
   left: 50%; top: 60.2%; transform: translate(-50%, -50%);
 }
 .kf-elem { width: 100%; height: 100%; display: block; }

@@ -12,7 +12,7 @@
   const STAGE_W = 1080, STAGE_H = 1920;
   const WIN = { cx: 540, cy: 1156 };          // centre of spredaj.png's window opening (0.500, 0.602)
   const FIT = { w: 820, h: 740 };             // element fit box (window opening, slightly inset)
-  const RAD = { w: 1240, h: 900 };            // radial-glow box (wide horizontal/"lying" bloom)
+  const RAD = { w: 1080, h: 820 };            // radial-glow box: full frame width, anchored to the bottom edge
   const RESET_MS = 30000;                     // a frame lasts 30s, then back to the landing
   const FV = "?v=2026-06-22";                 // cache-bust for swapped art
 
@@ -32,7 +32,7 @@
 
   // soft warm glow built from each radial's stop colours (white core -> mids -> clear)
   const glow = (c1, c2, c3, mid) =>
-    `radial-gradient(ellipse 56% 40% at 50% 50%,` +     // wider than tall → horizontal "lying" glow
+    `radial-gradient(ellipse 58% 48% at 50% 50%,` +     // reaches the side + bottom edges of its box
     ` rgba(255,255,255,0.95) 0%, ${c1} 12%, ${c2} 24%, ${c3} 36%,` +
     ` rgba(255,255,255,${mid}) 54%, rgba(249,249,249,0) 82%)`;
 
@@ -51,7 +51,7 @@
     "pony": { bg: "frames/pony/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.35),
       element: { kind: "video", src: "frames/pony/video.mp4", blend: "pluslighter", anim: "none", boxW: 840, boxH: 766 } },
     "spiral-kitten": { bg: "frames/spiral-kitten/ozadje.png", radial: glow("#795882", "#3F2B11", "#766D62", 0.4),
-      element: { kind: "img", src: "frames/spiral-kitten/element.svg", blend: "screen", anim: "float", iw: 195, ih: 224, scale: 0.29 } },
+      element: { kind: "img", src: "frames/spiral-kitten/element.svg", blend: "normal", anim: "float", iw: 195, ih: 224, scale: 0.29 } },
     "nia": { bg: "frames/nia/ozadje.png", radial: glow("#795882", "#4D3A13", "#7F7B52", 0.4),
       element: { kind: "img", src: "frames/nia/element.svg", blend: "normal", anim: "float", iw: 249, ih: 224, scale: 0.29 } },
     "deer": { bg: "frames/deer/ozadje.png", radial: glow("#795882", "#BFB1E8", "#556272", 0.4),

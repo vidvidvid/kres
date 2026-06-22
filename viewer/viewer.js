@@ -608,12 +608,12 @@ function frame(now) {
     // The landing scene. When no one is moving a cursor (idle) the roaming
     // animals give way to the standby arc (drawn in the DOM by frames.js).
     drawBackground();
+    if (textboxImg) ctx.drawImage(textboxImg, stageX, stageY, stageW, stageH);   // text card, sent to back (just over the bg)
     let live = 0; for (const [, c] of cursors) if (c.alpha > 0.5) live++;
     idle = live === 0;
     if (SHOW_FIRE) { computeFireRect(); updateFire(now, dt); drawFire(); }
     if (!idle) for (const [, c] of cursors) drawCursor(c, now);
-    // Same overall-frame stack as the scenery frames: text card → plants → paper.
-    if (textboxImg) ctx.drawImage(textboxImg, stageX, stageY, stageW, stageH);   // text card, behind the plants
+    // Overall-frame stack (textbox was already drawn at the back, just over the bg): plants → paper.
     if (spredajImg) ctx.drawImage(spredajImg, stageX, stageY, stageW, stageH);   // ornamental frame (plants) in front
     if (paperImg) { ctx.save(); ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = 0.6; ctx.drawImage(paperImg, stageX, stageY, stageW, stageH); ctx.restore(); }   // paper texture over everything
     drawMotherCursor(now);
